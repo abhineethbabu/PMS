@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment</title>
+  <link rel="stylesheet" href="css/customer.css" />
+</head>
+<body>
+  <div class="top-bar">
+    <span id="welcome-user"></span>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div class="payment-container">
+    <h2>Payment Details</h2>
+    <div class="payment-summary">
+      <p><strong>Bill Amount:</strong> ₹<span id="bill-amount">0.00</span></p>
+      <label><input type="radio" name="paymentMode" value="Debit" checked /> Debit Card</label>
+      <label><input type="radio" name="paymentMode" value="Credit" /> Credit Card</label>
+    </div>
+    <div class="payment-buttons">
+      <button onclick="proceedToCard()">Pay Now</button>
+      <button onclick="backToBooking()">Back to Booking</button>
+    </div>
+  </div>
+
+  <script>
+    // Get the current user
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser) {
+      window.location.href = "Login.html";
+    } else {
+      document.getElementById("welcome-user").innerText = "Welcome, " + currentUser.name;
+    }
+  
+    // Retrieve current booking
+    const booking = JSON.parse(localStorage.getItem("currentBooking"));
+    if (!booking) {
+      alert("No booking found. Redirecting to booking page...");
+      window.location.href = "Booking.html";
+    } else {
+      const numericCost = parseFloat(booking.cost.replace(/[^\d.]/g, ""));
+      document.getElementById("bill-amount").innerText = numericCost.toFixed(2);
+    }
+  
+    // Logout function
+    function logout() {
+      localStorage.removeItem("currentUser");
+      window.location.href = "Login.html";
+    }
+  
+    // Go back to booking page
+    function backToBooking() {
+      window.location.href = "Booking.html";
+    }
+  
+    // Proceed to card payment
+    function proceedToCard() {
+      const selectedPaymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
+  
+      booking.paymentMode = selectedPaymentMode;
+  
+      // Update currentBooking in localStorage
+      localStorage.setItem("currentBooking", JSON.stringify(booking));
+  
+      // Redirect to card payment page
+      window.location.href = "CardPayment.html";
+    }
+  </script>
+  
+</body>
+</html>

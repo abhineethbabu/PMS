@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Booking History</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #343a40;
+      padding: 20px 10px;
+      color: white;
+    }
+
+    .sidebar h4 {
+      color: white;
+      text-align: center;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+
+    .sidebar a:hover {
+      background-color: #495057;
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    table th, table td {
+      text-align: center;
+    }
+
+    .pagination-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h4 class="text-center mb-4">Menu</h4>
+    <a href="CustomerDashboard.html">Home</a>
+    <a href="BookingService.html">Booking Service</a>
+    <a href="Tracking.html">Tracking</a>
+    <a href="PreviousBooking.html">Previous Booking</a>
+    <a href="Support.html">Contact Support</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content">
+    <div class="top-bar">
+      <h3>Booking History</h3>
+      <div>
+        <span id="username" class="me-3 fw-bold"></span>
+        <button class="btn btn-outline-danger btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- Booking History Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>Customer ID</th>
+            <th>Booking ID</th>
+            <th>Booking Date</th>
+            <th>Receiver Name</th>
+            <th>Delivered Address</th>
+            <th>Amount (₹)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="bookingHistoryBody">
+          <!-- Populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Buttons -->
+    <div class="pagination-buttons">
+      <button class="btn btn-secondary" onclick="previousPage()">Previous</button>
+      <button class="btn btn-secondary" onclick="nextPage()">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const rowsPerPage = 5;
+    let currentPage = 1;
+    let bookings = [];
+
+    function logout() {
+      localStorage.removeItem("currentUser");
+      window.location.href = "LoginPage.html";
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("bookingHistoryBody");
+      tbody.innerHTML = "";
+      const start = (currentPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const pageData = bookings.slice(start, end);
+
+      pageData.forEach(b => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${b.customerId}</td>
+          <td>${b.bookingId}</td>
+          <td>${b.bookingDate}</td>
+          <td>${b.receiverName}</td>
+          <td>${b.receiverAddress}</td>
+          <td>${b.cost}</td>
+          <td>${b.status}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function previousPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    }
+
+    function nextPage() {
+      if (currentPage * rowsPerPage < bookings.length) {
+        currentPage++;
+        renderTable();
+      }
+    }
+
+    // Load bookings from localStorage
+    window.onload = function () {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (!user) {
+        window.location.href = "LoginPage.html";
+        return;
+      }
+
+      document.getElementById("username").innerText = "Welcome, " + user.username;
+
+      const allBookings = JSON.parse(localStorage.getItem("bookingList")) || [];
+      bookings = allBookings.filter(b => b.userId === user.userId);
+      renderTable();
+    };
+  </script>
+</body>
+</html>

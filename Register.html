@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container mt-5">
+    <h2 class="text-center">Customer Registration</h2>
+    <form id="registerForm">
+      <!-- Personal Information -->
+      <div class="mb-3">
+        <label>Customer Name</label>
+        <input type="text" class="form-control" maxlength="50" required id="name"/>
+      </div>
+      <div class="mb-3">
+        <label>Email</label>
+        <input type="email" class="form-control" required id="email"/>
+      </div>
+      <div class="mb-3">
+        <label>Mobile Number</label>
+        <div class="input-group">
+          <select class="form-select w-25" id="countryCode" required>
+            <option value="+91">+91</option>
+            <option value="+1">+1</option>
+            <option value="+44">+44</option>
+          </select>
+          <input type="text" class="form-control" maxlength="10" minlength="10" required id="mobile"/>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label>Address</label>
+        <textarea class="form-control" required id="address"></textarea>
+      </div>
+
+      <!-- Username and Password -->
+      <div class="mb-3">
+        <label>User ID</label>
+        <input type="text" class="form-control" id="userId" minlength="5" maxlength="20" required />
+      </div>
+      <div class="mb-3">
+        <label>Password</label>
+        <input type="password" class="form-control" id="password" maxlength="30" required />
+      </div>
+      <div class="mb-3">
+        <label>Confirm Password</label>
+        <input type="password" class="form-control" id="confirmPassword" maxlength="30" required />
+      </div>
+
+      <!-- Preferences -->
+      <div class="mb-3">
+        <label>Preferences</label>
+        <textarea class="form-control" id="preferences" placeholder="Mail delivery, notifications, etc."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-success">Register</button>
+      <button type="reset" class="btn btn-secondary">Reset</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const mobile = document.getElementById("countryCode").value + document.getElementById("mobile").value;
+    const address = document.getElementById("address").value;
+    const userId = document.getElementById("userId").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const preferences = document.getElementById("preferences").value;
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{1,30}$/;
+
+    if (!passwordRegex.test(password)) {
+      alert("Password must include at least one uppercase letter, one lowercase letter, and one special character.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    // Create the user object
+    const user = { name, email, mobile, address, userId, password, preferences };
+
+    // Get existing users from localStorage or initialize an empty array
+    const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+
+    // Check for duplicate userId
+    const isDuplicate = existingUsers.some(u => u.userId === userId);
+    if (isDuplicate) {
+      alert("User ID already exists! Please choose a different User ID.");
+      return;
+    }
+
+    // Add the new user to the array
+    existingUsers.push(user);
+
+    // Store updated array back to localStorage
+    localStorage.setItem("users", JSON.stringify(existingUsers));
+    localStorage.setItem("lastRegistered", JSON.stringify({ name, email, userId }));
+
+    // Redirect to success page
+    window.location.href = "RegisterSuccess.html";
+  });
+
+  
+  </script>
+</body>
+</html>

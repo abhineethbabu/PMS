@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customer Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 220px;
+      background-color: #343a40;
+      color: white;
+      padding-top: 20px;
+    }
+    .sidebar a {
+      color: white;
+      display: block;
+      padding: 12px;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      background-color: #495057;
+    }
+    .content {
+      flex-grow: 1;
+      padding: 20px;
+    }
+    .top-right {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h4 class="text-center mb-4">Menu</h4>
+    <a href="CustomerDashboard.html">Home</a>
+    <a href="BookingService.html">Booking Service</a>
+    <a href="Tracking.html">Tracking</a>
+    <a href="PreviousBooking.html">Previous Booking</a>
+    <a href="Support.html">Contact Support</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content">
+    <div class="top-right">
+      <h5>Welcome, <span id="username"></span></h5>
+    </div>
+    <hr />
+    <h3>Customer Home</h3>
+    <p>This is your dashboard. Use the sidebar to access your parcel services.</p>
+  </div>
+
+  <script>
+    // Retrieve the logged-in user info
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+    if (!currentUser) {
+      window.location.href = "Login.html";
+    } else {
+      document.getElementById("username").innerText = currentUser.name;
+    }
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem("currentUser");
+      window.location.href = "Login.html";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Officer Booking History</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="../UI/css/style.css"/>
+  <style>
+    body {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 220px;
+      background-color: #343a40;
+      color: white;
+      padding-top: 20px;
+      position: fixed;
+      height: 100%;
+    }
+    .sidebar a {
+      color: white;
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      background-color: #495057;
+    }
+    .content {
+      margin-left: 220px;
+      padding: 30px;
+      flex-grow: 1;
+    }
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h4 class="text-center mb-4">Officer Panel</h4>
+    <a href="OfficerDashboard.html">Dashboard</a>
+    <a href="OfficerTracking.html">Track Booking</a>
+    <a href="OfficerSchedulePickup.html">Schedule Pickup</a>
+    <a href="OfficerStatusUpdate.html">Update Status</a>
+    <a href="OfficerBookingHistory.html" style="background-color: #495057;">Booking History</a>
+    <a href="OfficerSupport.html">Support</a>
+    <a href="LoginPage.html">Logout</a>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <div class="topbar">
+      <span class="me-3 fw-bold">Welcome Officer</span>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+    </div>
+
+    <h3 class="mb-4">Booking History</h3>
+
+    <!-- Filters -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <input type="text" class="form-control" id="customerId" placeholder="Enter Customer ID" />
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" id="startDate" />
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" id="endDate" />
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100" onclick="filterBookings()">Search</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped" id="historyTable">
+        <thead class="table-dark">
+          <tr>
+            <th>Customer ID</th>
+            <th>Booking ID</th>
+            <th>Booking Date</th>
+            <th>Receiver Name</th>
+            <th>Delivered Address</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between mt-3">
+      <button class="btn btn-secondary" onclick="prevPage()">Previous</button>
+      <button class="btn btn-secondary" onclick="nextPage()">Next</button>
+    </div>
+  </div>
+
+  <script>
+    let currentPage = 0;
+    const pageSize = 5;
+
+    const bookings = JSON.parse(localStorage.getItem("bookingList") || "[]");
+
+    function logout() {
+      alert("Logged out successfully.");
+      window.location.href = "../UI/Login/LoginPage.html";
+    }
+
+    function filterBookings() {
+      const customerId = document.getElementById("customerId").value.trim().toLowerCase();
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+
+      let filtered = bookings;
+
+      if (customerId) {
+        filtered = filtered.filter(b => b.customerId.toLowerCase() === customerId);
+      }
+
+      if (start) {
+        filtered = filtered.filter(b => new Date(b.bookingDate) >= new Date(start));
+      }
+
+      if (end) {
+        filtered = filtered.filter(b => new Date(b.bookingDate) <= new Date(end));
+      }
+
+      sessionStorage.setItem("filteredBookings", JSON.stringify(filtered));
+      currentPage = 0;
+      displayTable();
+    }
+
+    function displayTable() {
+      const tbody = document.getElementById("tableBody");
+      const filtered = JSON.parse(sessionStorage.getItem("filteredBookings") || "[]");
+      tbody.innerHTML = "";
+
+      const start = currentPage * pageSize;
+      const end = start + pageSize;
+      const paginated = filtered.slice(start, end);
+
+      if (paginated.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center">No results found.</td></tr>`;
+        return;
+      }
+
+      for (const b of paginated) {
+        tbody.innerHTML += `
+          <tr>
+            <td>${b.customerId}</td>
+            <td>${b.bookingId}</td>
+            <td>${b.bookingDate}</td>
+            <td>${b.receiverName}</td>
+            <td>${b.receiverAddress}</td>
+            <td>${b.cost}</td>
+            <td>${b.status || "Pending"}</td>
+          </tr>`;
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        displayTable();
+      }
+    }
+
+    function nextPage() {
+      const filtered = JSON.parse(sessionStorage.getItem("filteredBookings") || "[]");
+      if ((currentPage + 1) * pageSize < filtered.length) {
+        currentPage++;
+        displayTable();
+      }
+    }
+
+    // Initialize
+    sessionStorage.setItem("filteredBookings", JSON.stringify(bookings));
+    displayTable();
+  </script>
+</body>
+</html>

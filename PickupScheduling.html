@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Schedule Pickup</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body {
+      display: flex;
+    }
+
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      background-color: #343a40;
+      color: white;
+      padding: 1rem;
+    }
+
+    .sidebar h4 {
+      color: white;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      margin: 10px 0;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem;
+    }
+
+    .form-section {
+      max-width: 600px;
+      margin-top: 2rem;
+    }
+
+    .message {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h4 class="text-center mb-4">Officer Panel</h4>
+    <a href="OfficerDashboard.html">Home</a>
+    <a href="OfficerTracking.html">Tracking</a>
+    <a href="DeliveryStatus.html">Delivery Status</a>
+    <a href="PickupScheduling.html">Pickup Scheduling</a>
+    <a href="PreviousBooking.html">Previous Booking</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+  <!-- Main Content -->
+  <div class="main-content">
+    <h2>Schedule Pickup</h2>
+
+    <div class="form-section">
+      <div class="mb-3">
+        <label for="bookingIdInput" class="form-label">Enter Booking ID:</label>
+        <input type="text" class="form-control" id="bookingIdInput" placeholder="e.g., BK1753391520917"/>
+      </div>
+      <button class="btn btn-primary" onclick="fetchBooking()">Search</button>
+
+      <div id="bookingDetails" style="display:none;">
+        <hr>
+        <h5>Booking Details</h5>
+        <p><strong>Customer ID:</strong> <span id="custId"></span></p>
+        <p><strong>Receiver:</strong> <span id="receiver"></span></p>
+        
+        <div class="mb-3">
+          <label for="pickupInput" class="form-label">Pickup Time</label>
+          <input type="datetime-local" class="form-control" id="pickupInput">
+        </div>
+
+        <div class="mb-3">
+          <label for="dropoffInput" class="form-label">Drop-off Time</label>
+          <input type="datetime-local" class="form-control" id="dropoffInput">
+        </div>
+
+        <button class="btn btn-success" onclick="saveSchedule()">Save</button>
+
+        <div id="msg" class="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentBooking = null;
+
+    function fetchBooking() {
+      const bookingId = document.getElementById("bookingIdInput").value.trim();
+      const bookingList = JSON.parse(localStorage.getItem("bookingList")) || [];
+      const found = bookingList.find(b => b.bookingId === bookingId);
+
+      const detailsDiv = document.getElementById("bookingDetails");
+      const msgDiv = document.getElementById("msg");
+      msgDiv.innerText = "";
+
+      if (!found) {
+        detailsDiv.style.display = "none";
+        alert("Booking not found!");
+        return;
+      }
+
+      currentBooking = found;
+      document.getElementById("custId").innerText = found.customerId;
+      document.getElementById("receiver").innerText = found.receiverName;
+
+      document.getElementById("pickupInput").value = formatForInput(found.pickupTime);
+      document.getElementById("dropoffInput").value = formatForInput(found.dropoffTime);
+
+      detailsDiv.style.display = "block";
+    }
+
+    function formatForInput(dateStr) {
+      try {
+        // Format if already in ISO (for pickupTime)
+        if (dateStr.includes("T")) return dateStr;
+        const [datePart, timePart] = dateStr.split(",");
+        const [day, month, year] = datePart.trim().split("/");
+        const [hour, minute] = timePart.trim().split(":");
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+      } catch {
+        return "";
+      }
+    }
+
+    function saveSchedule() {
+      const pickupTime = document.getElementById("pickupInput").value;
+      const dropoffTime = document.getElementById("dropoffInput").value;
+      const msg = document.getElementById("msg");
+
+      if (!pickupTime || !dropoffTime) {
+        msg.innerText = "Please provide both pickup and drop-off times.";
+        msg.className = "message text-danger";
+        return;
+      }
+
+      const bookingList = JSON.parse(localStorage.getItem("bookingList")) || [];
+      const index = bookingList.findIndex(b => b.bookingId === currentBooking.bookingId);
+
+      if (index !== -1) {
+        bookingList[index].pickupTime = pickupTime;
+        bookingList[index].dropoffTime = new Date(dropoffTime).toLocaleString("en-IN");
+        localStorage.setItem("bookingList", JSON.stringify(bookingList));
+
+        msg.innerText = "Schedule updated successfully!";
+        msg.className = "message text-success";
+      } else {
+        msg.innerText = "Booking not found during save!";
+        msg.className = "message text-danger";
+      }
+    }
+  </script>
+</body>
+</html>
